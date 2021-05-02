@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace MarketWorkBd
@@ -10,7 +11,8 @@ namespace MarketWorkBd
     public partial class Form1 : Form
     {
         IProductsrepository repo = null;
-
+        Thread serverThread = null;
+        MarketWorkBd.Server.Server server = null;
         public Form1()
         {
             InitializeComponent();
@@ -37,6 +39,9 @@ namespace MarketWorkBd
                 MessageBox.Show(ex.Message.ToString(), ex.Source.ToString(), MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             }
+            //Запускаем сервер в отдельном потоке
+            serverThread = new Thread(startServer);
+            serverThread.Start();
         }
 
         private void insert_button_click(object sender, EventArgs e)
@@ -142,6 +147,12 @@ namespace MarketWorkBd
                 MessageBox.Show(ex.Message.ToString(), ex.Source.ToString(), MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             }
+        }
+
+        private void startServer()
+        {
+            server = new MarketWorkBd.Server.Server(8080);
+            server.startServerLoop();
         }
     }
 }
