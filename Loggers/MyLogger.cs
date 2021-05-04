@@ -1,4 +1,5 @@
 ﻿using NLog;
+using NLog.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,11 +8,22 @@ using System.Threading.Tasks;
 
 namespace MarketWorkBd.Loggers
 {
+    [ThreadSafe]
     public class MyLogger : ILogger
     {
         //Use Singleton pattern
         private static MyLogger instance;
         private static Logger logger;
+
+        /// <summary>
+        /// Объект для синхронизации разных потоков для создание самого объекта
+        /// </summary>
+        private static object syncMyLogger = new object();
+
+        /// <summary>
+        /// Объект для синхронизации разных потоков для создания экземпляра логгера
+        /// </summary>
+        private static object syncLoggerInstance = new object();
 
         //single constructor
         private MyLogger() {}
@@ -19,14 +31,26 @@ namespace MarketWorkBd.Loggers
         public static MyLogger getMyLoggerInstance()
         {
             if (instance == null)
-                instance = new MyLogger();
+            {
+                lock (syncMyLogger)
+                {
+                    if (instance == null)
+                        instance = new MyLogger();
+                }
+            }
             return instance;
         }
 
         private Logger getLogger(string theLogger)
         {
             if (MyLogger.logger == null)
-                MyLogger.logger = LogManager.GetLogger(theLogger);
+            {
+                lock (syncLoggerInstance)
+                {
+                    if (MyLogger.logger == null)
+                        MyLogger.logger = LogManager.GetLogger(theLogger);
+                }
+            }
 
             return MyLogger.logger;
         }
