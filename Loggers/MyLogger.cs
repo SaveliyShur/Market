@@ -14,9 +14,7 @@ namespace MarketWorkBd.Loggers
         private static Logger logger;
 
         //single constructor
-        private MyLogger()
-        {
-        }
+        private MyLogger() {}
 
         public static MyLogger getMyLoggerInstance()
         {
