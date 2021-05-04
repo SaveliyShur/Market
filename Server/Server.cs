@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MarketWorkBd.Loggers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -34,6 +35,7 @@ namespace MarketWorkBd.Server
             {
                 while (true)
                 {
+                    MyLogger.getMyLoggerInstance().info("Ожидание подключений...");
                     Console.WriteLine("Ожидание подключений... ");
                     // Почти все время висим здесь на блокирующем вызове Listener.AcceptTcpClient(),
                     // ждем соединения
@@ -41,6 +43,7 @@ namespace MarketWorkBd.Server
                     {
                         // принимаем соединение, передаем данные
                         Console.WriteLine("Подключен клиент. Выполнение запроса...");
+                        MyLogger.getMyLoggerInstance().info("Подключен клиент. Выполнение запроса...");
 
                         // получаем сетевой поток для чтения и записи
                         NetworkStream stream = client.GetStream();
@@ -54,6 +57,7 @@ namespace MarketWorkBd.Server
                         // отправка сообщения
                         stream.Write(data, 0, data.Length);
                         Console.WriteLine("Отправлено сообщение: {0}", response);
+                        MyLogger.getMyLoggerInstance().info("Отправлено сообщение: {0}", response);
                         // закрываем поток
                         stream.Close();
                         // закрываем подключение
@@ -63,6 +67,7 @@ namespace MarketWorkBd.Server
             }
             catch (System.Net.Sockets.SocketException) {
                 Console.WriteLine("Получено исключение для сокетов.");
+                MyLogger.getMyLoggerInstance().warning("Получено исключение System.Net.Sockets.SocketException. Сервер остановлен.");
             }
             // При вызове из другого потока Listener.Stop(), возникае исключение WSACancelBlockingCall
             // Ловим это исключение, выходим из цикла и завершаем поток.

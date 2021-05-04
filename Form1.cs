@@ -1,4 +1,5 @@
-﻿using MarketWorkBd.Models;
+﻿using MarketWorkBd.Loggers;
+using MarketWorkBd.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,15 +14,17 @@ namespace MarketWorkBd
         IProductsrepository repo = null;
         Thread serverThread = null;
         MarketWorkBd.Server.Server server = null;
+
         public Form1()
         {
+            MyLogger.getMyLoggerInstance().info("Запуск программы.");
             InitializeComponent();
         }
 
         //Метод загрузки приложения
         private void Form1_LoadAsync(object sender, EventArgs e)
         {
-            string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\учебные проекты C#\MarketWorkBd\DatabaseWorks.mdf;Integrated Security=True";
+            string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\С#\MyWork\DatabaseWorks.mdf;Integrated Security=True";
 
             repo = new ProductsRepository(connectionString);
 
@@ -39,7 +42,8 @@ namespace MarketWorkBd
                 MessageBox.Show(ex.Message.ToString(), ex.Source.ToString(), MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             }
-            //Запускаем сервер в отдельном потоке
+
+            MyLogger.getMyLoggerInstance().info("Запуск сервера для приема сообщений в отдельном потоке.");
             serverThread = new Thread(startServer);
             serverThread.Start();
         }
