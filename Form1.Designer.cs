@@ -20,7 +20,7 @@ namespace MarketWorkBd
             {
                 try
                 {
-                    server.Dispose();
+                    server.Disconnect();
                     serverThread.Join();
                     serverThread.Interrupt();
                 }

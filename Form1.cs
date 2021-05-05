@@ -44,8 +44,17 @@ namespace MarketWorkBd
             }
 
             MyLogger.getMyLoggerInstance().info("Запуск сервера для приема сообщений в отдельном потоке.");
-            serverThread = new Thread(startServer);
-            serverThread.Start();
+            try
+            {
+                server = new Server.Server();
+                serverThread = new Thread(new ThreadStart(server.Listen));
+                serverThread.Start(); //старт потока
+            }
+            catch (Exception ex)
+            {
+                server.Disconnect();
+                Console.WriteLine(ex.Message);
+            }
         }
 
         private void insert_button_click(object sender, EventArgs e)
@@ -151,12 +160,6 @@ namespace MarketWorkBd
                 MessageBox.Show(ex.Message.ToString(), ex.Source.ToString(), MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             }
-        }
-
-        private void startServer()
-        {
-            server = new MarketWorkBd.Server.Server(8080);
-            server.startServerLoop();
         }
     }
 }

@@ -5,73 +5,86 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MarketWorkBd.Server
 {
-    public class Server : IDisposable
+    public class Server
     {
-        TcpListener server;
+        static TcpListener tcpListener; // сервер для прослушивания
+        List<Client> clients = new List<Client>(); // все подключения
 
-        public void Dispose()
+        protected internal void AddConnection(Client clientObject)
         {
-            if(server != null)
-            {
-                server.Stop();
-                Console.WriteLine("вызван метод стопа.");
-            }
+            clients.Add(clientObject);
+        }
+        protected internal void RemoveConnection(string id)
+        {
+            // получаем по id закрытое подключение
+            Client client = clients.FirstOrDefault(c => c.Id == id);
+            // и удаляем его из списка подключений
+            if (client != null)
+                clients.Remove(client);
         }
 
-        public Server(int port)
-        {
-
-            server = new TcpListener(IPAddress.Parse("127.0.0.1"), port);
-            server.Start();
-        }
-
-        public void startServerLoop()
+        // прослушивание входящих подключений
+        protected internal void Listen()
         {
             try
             {
+                tcpListener = new TcpListener(IPAddress.Any, 8888);
+                tcpListener.Start();
+                MyLogger.getMyLoggerInstance().info("Сервер запущен. Ожидание подключений...");
+                Console.WriteLine("Сервер запущен. Ожидание подключений...");
+
                 while (true)
                 {
-                    MyLogger.getMyLoggerInstance().info("Ожидание подключений...");
-                    Console.WriteLine("Ожидание подключений... ");
-                    // Почти все время висим здесь на блокирующем вызове Listener.AcceptTcpClient(),
-                    // ждем соединения
-                    using (TcpClient client = server.AcceptTcpClient())
-                    {
-                        // принимаем соединение, передаем данные
-                        Console.WriteLine("Подключен клиент. Выполнение запроса...");
-                        MyLogger.getMyLoggerInstance().info("Подключен клиент. Выполнение запроса...");
+                    TcpClient tcpClient = tcpListener.AcceptTcpClient();
+                    MyLogger.getMyLoggerInstance().info("Подключаем клиента.");
 
-                        // получаем сетевой поток для чтения и записи
-                        NetworkStream stream = client.GetStream();
-
-
-                        // сообщение для отправки клиенту
-                        string response = "Привет мир";
-                        // преобразуем сообщение в массив байтов
-                        byte[] data = Encoding.UTF8.GetBytes(response);
-
-                        // отправка сообщения
-                        stream.Write(data, 0, data.Length);
-                        Console.WriteLine("Отправлено сообщение: {0}", response);
-                        MyLogger.getMyLoggerInstance().info("Отправлено сообщение: {0}", response);
-                        // закрываем поток
-                        stream.Close();
-                        // закрываем подключение
-                        client.Close();
-                    }
+                    Client clientObject = new Client(tcpClient, this);
+                    Thread clientThread = new Thread(new ThreadStart(clientObject.Process));
+                    clientThread.Start();
                 }
             }
-            catch (System.Net.Sockets.SocketException) {
-                Console.WriteLine("Получено исключение для сокетов.");
-                MyLogger.getMyLoggerInstance().warning("Получено исключение System.Net.Sockets.SocketException. Сервер остановлен.");
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Disconnect();
             }
-            // При вызове из другого потока Listener.Stop(), возникае исключение WSACancelBlockingCall
-            // Ловим это исключение, выходим из цикла и завершаем поток.
         }
 
+        /// <summary>
+        /// Присылает сообщения для клиента
+        /// </summary>
+        /// <param name="message">Сообщение</param>
+        /// <param name="id">Id клиента</param>
+        protected internal void MessageToClient(string message, string id)
+        {
+            byte[] data = Encoding.Unicode.GetBytes(message);
+            for (int i = 0; i < clients.Count; i++)
+            {
+                if (clients[i].Id == id) // если id клиента не равно id отправляющего
+                {
+                    clients[i].Stream.Write(data, 0, data.Length); //передача данных
+                    MyLogger.getMyLoggerInstance().info("Передано сообщение: " + message) ;
+                    break;
+                }
+            }
+        }
+
+        // отключение всех клиентов
+        protected internal void Disconnect()
+        {
+
+            tcpListener.Stop(); //остановка сервера
+            MyLogger.getMyLoggerInstance().info("Сервер остановлен.");
+            for (int i = 0; i < clients.Count; i++)
+            {
+                clients[i].Close(); //отключение клиента
+            }
+            Environment.Exit(0); //завершение процесса
+        }
     }
 }
