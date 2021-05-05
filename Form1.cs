@@ -21,7 +21,11 @@ namespace MarketWorkBd
             InitializeComponent();
         }
 
-        //Метод загрузки приложения
+        /// <summary>
+        /// Загрузка приложения и запуск сервера в отдельном потоке
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Form1_LoadAsync(object sender, EventArgs e)
         {
             string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\С#\MyWork\DatabaseWorks.mdf;Integrated Security=True";

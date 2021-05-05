@@ -25,6 +25,9 @@ namespace MarketWorkBd.Server
             serverObject.AddConnection(this);
         }
 
+        /// <summary>
+        /// Запускаем процесс работы с клиентом
+        /// </summary>
         public void Process()
         {
             try
@@ -64,7 +67,10 @@ namespace MarketWorkBd.Server
             }
         }
 
-        // чтение входящего сообщения и преобразование в строку
+        /// <summary>
+        /// Чтение входящего сообщения и преобразование в строку
+        /// </summary>
+        /// <returns>Пришедшее сообщение</returns>
         private string GetMessage()
         {
             byte[] data = new byte[64]; // буфер для получаемых данных
@@ -80,7 +86,9 @@ namespace MarketWorkBd.Server
             return builder.ToString();
         }
 
-        // закрытие подключения
+        /// <summary>
+        /// Закрытие подключения
+        /// </summary>
         protected internal void Close()
         {
             if (Stream != null)

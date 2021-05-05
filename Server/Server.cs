@@ -15,10 +15,19 @@ namespace MarketWorkBd.Server
         static TcpListener tcpListener; // сервер для прослушивания
         List<Client> clients = new List<Client>(); // все подключения
 
+        /// <summary>
+        /// Добавление подключенного клиента в коллекцию
+        /// </summary>
+        /// <param name="clientObject">Подключенный клиент</param>
         protected internal void AddConnection(Client clientObject)
         {
             clients.Add(clientObject);
         }
+
+        /// <summary>
+        /// Удаление соединения с клиентом по id
+        /// </summary>
+        /// <param name="id">ID удаляемого клиента</param>
         protected internal void RemoveConnection(string id)
         {
             // получаем по id закрытое подключение
@@ -28,7 +37,9 @@ namespace MarketWorkBd.Server
                 clients.Remove(client);
         }
 
-        // прослушивание входящих подключений
+        /// <summary>
+        /// Прослушивание входящих подключений и обработка клиентов в отдельных потоках
+        /// </summary>
         protected internal void Listen()
         {
             try
@@ -74,7 +85,9 @@ namespace MarketWorkBd.Server
             }
         }
 
-        // отключение всех клиентов
+        /// <summary>
+        /// Отключение всех клиентов
+        /// </summary>
         protected internal void Disconnect()
         {
 

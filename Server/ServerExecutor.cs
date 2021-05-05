@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace MarketWorkBd.Server
 {
+    /// <summary>
+    /// Выполняет парсинг запросов к серверу и выполнением их
+    /// </summary>
     [ThreadSafe]
     public class ServerExecutor
     {
@@ -19,6 +22,10 @@ namespace MarketWorkBd.Server
         /// </summary>
         private static object syncMyLogger = new object();
 
+        /// <summary>
+        /// Получает объект репозитория для работы с репозиторием
+        /// </summary>
+        /// <returns>Объект репозитория</returns>
         private IProductsrepository getRepo()
         {
             if (repo == null)
@@ -70,6 +77,7 @@ namespace MarketWorkBd.Server
         /// </summary>
         /// <param name="name">Название</param>
         /// <param name="price">Цена</param>
+        /// <returns>True - успешно, иначе False</returns>
         private bool delete(string name, string price)
         {
             List<Entity> entities = getRepo().GetUsers();
